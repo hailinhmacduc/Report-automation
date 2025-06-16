@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tạo báo cáo quảng cáo Excel</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 30px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .input-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .input-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+        }
+        
+        input[type="number"],
+        input[type="file"],
+        input[type="date"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+        }
+        
+        .preview-section {
+            margin-top: 30px;
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        
+        th, td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: left;
+        }
+        
+        th {
+            background: #e9ecef;
+            font-weight: bold;
+        }
+        
+        .facebook-header {
+            background: #E8F0FF;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .facebook-total {
+            background: #B8D4FF;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .google-header {
+            background: #E8F5E9;
+            text-align: center;
+        }
+        
+        .tiktok-header {
+            background: #FFE0E0;
+            text-align: center;
+        }
+        
+        .ck-header {
+            background: #FFF3E0;
+            text-align: center;
+        }
+        
+        .grand-total {
+            background: #FFEB3B;
+            text-align: center;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .budget-table {
+            margin-top: 20px;
+            width: 50%;
+        }
+        
+        .budget-facebook {
+            background: #E8D4FF;
+        }
+        
+        .budget-google {
+            background: #C8E6C9;
+        }
+        
+        .highlight-yellow {
+            background: #FFEB3B;
+            font-weight: bold;
+        }
+        
+        .text-right {
+            text-align: right;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Tạo Báo Cáo Quảng Cáo Excel</h1>
+        
+        <div class="input-section">
+            <h3>Thông tin báo cáo</h3>
+            
+            <div class="input-group">
+                <label>Upload file CSV từ Facebook Ads:</label>
+                <input type="file" id="csvFile" accept=".csv">
+            </div>
+            
+            <div class="input-group">
+                <label>Số tiền mong muốn (VND):</label>
+                <input type="number" id="targetAmount" value="37000000">
+            </div>
+            
+            <div class="input-group">
+                <label>Tổng nạp Facebook (VND):</label>
+                <input type="number" id="fbBudget" value="37000000">
+            </div>
+            
+            <div class="input-group">
+                <label>Còn tháng trước (VND):</label>
+                <input type="number" id="fbRemaining" value="3621814">
+            </div>
+            
+            <div class="button-group">
+                <button class="btn-primary" onclick="processReport()">🔄 Xử lý báo cáo</button>
+                <button class="btn-success" id="downloadBtn" onclick="downloadExcel()" style="display:none">📥 Tải xuống Excel</button>
+            </div>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Đang xử lý...</p>
+        </div>
+        
+        <div class="preview-section" id="preview" style="display:none">
+            <h3>Xem trước báo cáo:</h3>
+            <table id="reportTable"></table>
+            
+            <table class="budget-table" id="budgetTable"></table>
+        </div>
+    </div>
+
+    <script>
+        let processedData = null;
+        let workbook = null;
+
+        async function processReport() {
+            const fileInput = document.getElementById('csvFile');
+            if (!fileInput.files.length) {
+                alert('Vui lòng chọn file CSV!');
+                return;
+            }
+
+            document.getElementById('loading').style.display = 'block';
+            
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = async function(e) {
+                const csvContent = e.target.result;
+                const targetAmount = parseFloat(document.getElementById('targetAmount').value);
+                
+                try {
+                    // Send to webhook for processing
+                    const response = await fetch('https://primary-production-55bc0.up.railway.app/webhook/process-ads-report', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            csvData: csvContent,
+                            targetAmount: targetAmount,
+                            fbTotalBudget: document.getElementById('fbBudget').value,
+                            reportMonth: new Date().toISOString().slice(0, 7) + '-01'
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        const processedCSV = await response.text();
+                        generateExcelReport(processedCSV);
+                    } else {
+                        // Fallback to local processing
+                        generateExcelReport(csvContent, targetAmount);
+                    }
+                } catch (error) {
+                    console.error('Webhook error, using local processing:', error);
+                    generateExcelReport(csvContent, targetAmount);
+                }
+                
+                document.getElementById('loading').style.display = 'none';
+            };
+            
+            reader.readAsText(file);
+        }
+
+        function generateExcelReport(csvData, targetAmount) {
+            // Parse CSV
+            const lines = csvData.split('\n').filter(line => line.trim());
+            const headers = lines[0].split(';');
+            const campaigns = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(';');
+                if (values.length >= headers.length) {
+                    const campaign = {};
+                    headers.forEach((header, index) => {
+                        campaign[header.trim()] = values[index] || '';
+                    });
+                    campaigns.push(campaign);
+                }
+            }
+            
+            // Calculate totals and scale if needed
+            let totalSpent = 0;
+            campaigns.forEach(c => {
+                const amount = parseInt((c['Số tiền đã chi tiêu (VND)'] || '0').replace(/[^0-9]/g, ''));
+                totalSpent += amount;
+            });
+            
+            if (targetAmount && targetAmount > 0) {
+                const scaleFactor = (targetAmount - targetAmount * 0.06) / totalSpent;
+                campaigns.forEach(c => {
+                    const amount = parseInt((c['Số tiền đã chi tiêu (VND)'] || '0').replace(/[^0-9]/g, ''));
+                    c['Số tiền đã chi tiêu (VND)'] = Math.round(amount * scaleFactor);
+                    
+                    const reach = parseInt(c['Người tiếp cận'] || '0');
+                    c['Người tiếp cận'] = Math.round(reach * scaleFactor * 1.1);
+                    
+                    const impressions = parseInt(c['Lượt hiển thị'] || '0');
+                    c['Lượt hiển thị'] = Math.round(impressions * scaleFactor * 1.2);
+                });
+                totalSpent = campaigns.reduce((sum, c) => sum + c['Số tiền đã chi tiêu (VND)'], 0);
+            }
+            
+            // Create Excel workbook
+            const wb = XLSX.utils.book_new();
+            
+            // Prepare data for Excel
+            const excelData = [];
+            
+            // Headers
+            excelData.push([
+                'Tên chiến dịch',
+                'Trạng thái phân phối',
+                'Cấp độ phân phối',
+                'Tên nhóm quảng cáo',
+                'Cài đặt phân bổ',
+                'Loại kết quả',
+                'Kết quả',
+                'Người tiếp cận',
+                'Lượt hiển thị',
+                'Chi phí trên mỗi kết quả',
+                'Số tiền đã chi tiêu (VND)',
+                'Bắt đầu báo cáo',
+                'Kết thúc báo cáo'
+            ]);
+            
+            // Campaign data
+            campaigns.forEach(c => {
+                excelData.push([
+                    c['Tên chiến dịch'] || '',
+                    'campaign',
+                    'campaign',
+                    '',
+                    'Lượt click trong 7 ngày hoặc lượt xem trong 1 ngày',
+                    c['Loại kết quả'] || 'Lượt bắt đầu cuộc trò chuyện qua tin nhắn',
+                    c['Kết quả'] || '',
+                    c['Người tiếp cận'] || '',
+                    c['Lượt hiển thị'] || '',
+                    c['Chi phí trên mỗi kết quả'] || '',
+                    c['Số tiền đã chi tiêu (VND)'] || '',
+                    c['Bắt đầu báo cáo'] || '2025-05-01',
+                    c['Kết thúc báo cáo'] || '2025-05-31'
+                ]);
+            });
+            
+            // Summary rows
+            const fbFee = Math.round(targetAmount * 0.06);
+            const fbTotal = targetAmount || (totalSpent + fbFee);
+            
+            // Add summary rows
+            excelData.push(['', '', '', '', '', 'THUẾ 6% FACEBOOK', '', '', '', '', formatNumber(fbFee), '', '']);
+            excelData.push(['', '', '', '', '', 'TỔNG TIỀN QC FACEBOOK', '', '', '', '', formatNumber(fbTotal), '', '']);
+            excelData.push(['', '', '', '', '', 'TIỀN QC GOOGLE + thuế', '', '', '', '', '0', '', '']);
+            excelData.push(['', '', '', '', '', 'QC Tiktok, Zalo', '', '', '', '', '0', '', '']);
+            excelData.push(['', '', '', '', '', 'CK Google', '', '', '', '', '0', '', '']);
+            excelData.push(['', '', '', '', '', 'CK FACEBOOK', '', '', '', '', '0', '', '']);
+            excelData.push(['', '', '', '', '', 'TỔNG', '', '', '', '', formatNumber(fbTotal), '', '']);
+            
+            // Create worksheet
+            const ws = XLSX.utils.aoa_to_sheet(excelData);
+            
+            // Add budget table
+            const budgetData = [
+                ['Tổng nạp Facebook', formatNumber(fbTotal), '', 'Tiền Doanh số chốt hồ'],
+                ['Còn tháng trước:', formatNumber(3621814), '', ''],
+                ['Sử dụng:', formatNumber(fbTotal), '', ''],
+                ['Còn lại:', formatNumber(3621814), '', ''],
+                ['', '', '', ''],
+                ['Tổng nạp Google', '0', '', ''],
+                ['Hải Dương Sử dụng:', '0', '', ''],
+                ['Còn lại:', '0', '', ''],
+                ['** Công nợ HĐ:', '0', '', '']
+            ];
+            
+            // Add budget table to sheet starting from row 20
+            budgetData.forEach((row, index) => {
+                row.forEach((cell, colIndex) => {
+                    const cellRef = XLSX.utils.encode_cell({ r: 19 + index, c: colIndex });
+                    ws[cellRef] = { v: cell, t: 's' };
+                });
+            });
+            
+            // Set column widths
+            ws['!cols'] = [
+                { wch: 30 }, // Tên chiến dịch
+                { wch: 15 }, // Trạng thái
+                { wch: 15 }, // Cấp độ
+                { wch: 20 }, // Nhóm QC
+                { wch: 35 }, // Cài đặt
+                { wch: 30 }, // Loại kết quả
+                { wch: 10 }, // Kết quả
+                { wch: 15 }, // Người tiếp cận
+                { wch: 15 }, // Lượt hiển thị
+                { wch: 20 }, // Chi phí/KQ
+                { wch: 20 }, // Số tiền
+                { wch: 15 }, // Bắt đầu
+                { wch: 15 }  // Kết thúc
+            ];
+            
+            XLSX.utils.book_append_sheet(wb, ws, 'Báo cáo QC');
+            
+            workbook = wb;
+            
+            // Show preview
+            displayPreview(excelData, budgetData);
+            document.getElementById('downloadBtn').style.display = 'inline-block';
+        }
+
+        function displayPreview(data, budgetData) {
+            const table = document.getElementById('reportTable');
+            table.innerHTML = '';
+            
+            data.forEach((row, rowIndex) => {
+                const tr = document.createElement('tr');
+                row.forEach((cell, colIndex) => {
+                    const td = document.createElement(rowIndex === 0 ? 'th' : 'td');
+                    td.textContent = cell;
+                    
+                    // Apply styles based on content
+                    if (cell === 'THUẾ 6% FACEBOOK') {
+                        tr.className = 'facebook-header';
+                    } else if (cell === 'TỔNG TIỀN QC FACEBOOK') {
+                        tr.className = 'facebook-total';
+                    } else if (cell === 'TIỀN QC GOOGLE + thuế') {
+                        tr.className = 'google-header';
+                    } else if (cell === 'QC Tiktok, Zalo') {
+                        tr.className = 'tiktok-header';
+                    } else if (cell === 'CK Google' || cell === 'CK FACEBOOK') {
+                        tr.className = 'ck-header';
+                    } else if (cell === 'TỔNG') {
+                        tr.className = 'grand-total';
+                    }
+                    
+                    if (colIndex === 10 && rowIndex > 0) {
+                        td.className = 'text-right';
+                    }
+                    
+                    tr.appendChild(td);
+                });
+                table.appendChild(tr);
+            });
+            
+            // Budget table
+            const budgetTable = document.getElementById('budgetTable');
+            budgetTable.innerHTML = '';
+            
+            budgetData.forEach((row, rowIndex) => {
+                const tr = document.createElement('tr');
+                row.forEach((cell, colIndex) => {
+                    const td = document.createElement('td');
+                    td.textContent = cell;
+                    
+                    if (rowIndex === 0) td.className = 'budget-facebook';
+                    if (rowIndex === 5) td.className = 'budget-google';
+                    if (cell === '** Công nợ HĐ:') td.className = 'highlight-yellow';
+                    if (cell === 'Tiền Doanh số chốt hồ') {
+                        td.className = 'highlight-yellow text-center';
+                        td.setAttribute('rowspan', '4');
+                    }
+                    
+                    tr.appendChild(td);
+                });
+                budgetTable.appendChild(tr);
+            });
+            
+            document.getElementById('preview').style.display = 'block';
+        }
+
+        function downloadExcel() {
+            if (!workbook) return;
+            
+            const fileName = `Báo_cáo_QC_${new Date().toISOString().slice(0, 10)}.xlsx`;
+            XLSX.writeFile(workbook, fileName);
+        }
+
+        function formatNumber(num) {
+            return parseInt(num).toLocaleString('vi-VN');
+        }
+    </script>
+</body>
+</html>
