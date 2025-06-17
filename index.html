@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -5,7 +6,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tạo báo cáo quảng cáo Excel</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- Update jsPDF to latest and add autoTable -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --primary-color: #4361ee;
+            --primary-light: #4895ef;
+            --primary-dark: #3f37c9;
+            --success-color: #4cc9f0;
+            --warning-color: #f72585;
+            --text-dark: #212529;
+            --text-light: #6c757d;
+            --bg-light: #f8f9fa;
+            --bg-dark: #212529;
+            --bg-gradient: linear-gradient(135deg, #4361ee, #4895ef);
+            --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.12);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.15);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --transition: all 0.3s ease;
+        }
+        
         * {
             margin: 0;
             padding: 0;
@@ -13,121 +42,288 @@
         }
         
         body {
-            font-family: Arial, sans-serif;
-            background: #f5f5f5;
+            font-family: 'Poppins', sans-serif;
+            background: #f0f2f5;
+            background-image: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
             padding: 20px;
+            color: var(--text-dark);
+            line-height: 1.6;
         }
         
         .container {
             max-width: 1400px;
             margin: 0 auto;
             background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            padding: 30px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            padding: 40px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: var(--bg-gradient);
         }
         
         h1 {
             text-align: center;
-            color: #333;
+            color: var(--primary-dark);
             margin-bottom: 30px;
+            font-weight: 700;
+            font-size: 2.5rem;
+            position: relative;
+            padding-bottom: 15px;
+        }
+        
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: var(--bg-gradient);
+            border-radius: 2px;
         }
         
         .input-section {
+            background: #ffffff;
+            padding: 32px 28px 24px 28px;
+            border-radius: var(--radius-md);
+            margin-bottom: 28px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: var(--transition);
+        }
+        
+        .input-section:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .input-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--primary-dark);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            position: relative;
+            padding-left: 15px;
+        }
+        
+        .input-title::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 20px;
+            background: var(--primary-color);
+            border-radius: 2px;
+        }
+
+        .input-card {
+            background: #fff;
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-sm);
+            padding: 24px 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: var(--transition);
+        }
+        
+        .input-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .input-card .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-card .input-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .input-card .input-icon {
+            font-size: 22px;
+            margin-right: 10px;
+            vertical-align: middle;
+            color: var(--primary-color);
+        }
+
+        label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+            letter-spacing: 0.01em;
+            font-size: 0.95rem;
+        }
+
+        input[type="number"],
+        input[type="file"],
+        input[type="date"],
+        input[type="text"],
+        input[type="password"],
+        select.form-select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: var(--radius-sm);
+            font-size: 16px;
+            background: #fff;
+            transition: var(--transition);
+            font-family: 'Poppins', sans-serif;
+            color: var(--text-dark);
+        }
+
+        input[type="number"]:focus,
+        input[type="file"]:focus,
+        input[type="date"]:focus,
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        select.form-select:focus {
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.15);
+            outline: none;
+        }
+        
+        input[type="file"] {
+            padding: 10px;
             background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-top: 32px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 14px 32px;
+            border: none;
+            border-radius: var(--radius-sm);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .btn-primary {
+            background: var(--bg-gradient);
+            color: white;
+            box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 6px 20px rgba(67, 97, 238, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #4cc9f0, #4895ef);
+            color: white;
+            box-shadow: 0 4px 15px rgba(76, 201, 240, 0.3);
+        }
+
+        .btn-success:hover {
+            box-shadow: 0 6px 20px rgba(76, 201, 240, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        /* Login specific styles */
+        .login-container {
+            max-width: 500px;
+            margin: 80px auto;
+            padding: 40px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            background: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: var(--bg-gradient);
+        }
+        
+        .login-icon {
+            text-align: center;
             margin-bottom: 20px;
         }
         
-        .input-group {
-            margin-bottom: 15px;
-        }
-        
-        label {
-            display: block;
-            font-weight: bold;
-            margin-bottom: 5px;
-            color: #555;
-        }
-        
-        input[type="number"],
-        input[type="file"],
-        input[type="date"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            font-size: 16px;
-        }
-        
-        .button-group {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-top: 20px;
-        }
-        
-        button {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 4px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .btn-primary {
-            background: #007bff;
-            color: white;
-        }
-        
-        .btn-primary:hover {
-            background: #0056b3;
-        }
-        
-        .btn-success {
-            background: #28a745;
-            color: white;
-        }
-        
-        .btn-success:hover {
-            background: #218838;
+        .login-icon i {
+            font-size: 60px;
+            color: var(--primary-color);
+            background: rgba(67, 97, 238, 0.1);
+            width: 100px;
+            height: 100px;
+            line-height: 100px;
+            border-radius: 50%;
         }
         
         .preview-section {
-            margin-top: 30px;
+            margin-top: 40px;
             overflow-x: auto;
+            background: white;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+            padding: 20px;
         }
         
         table {
             width: 100%;
             border-collapse: collapse;
             font-size: 14px;
+            background: white;
         }
         
         th, td {
-            border: 1px solid #000;
-            padding: 8px;
+            border: 1px solid rgba(0,0,0,0.1);
+            padding: 12px;
             text-align: left;
         }
         
         th {
-            background: #e9ecef;
-            font-weight: bold;
+            background: #f8f9fa;
+            font-weight: 600;
+            color: var(--text-dark);
         }
         
         .facebook-header {
             background: #E8F0FF;
             text-align: center;
-            font-weight: bold;
+            font-weight: 600;
         }
         
         .facebook-total {
             background: #B8D4FF;
             text-align: center;
-            font-weight: bold;
+            font-weight: 600;
         }
         
         .google-header {
@@ -148,13 +344,16 @@
         .grand-total {
             background: #FFEB3B;
             text-align: center;
-            font-weight: bold;
+            font-weight: 600;
             font-size: 16px;
         }
         
         .budget-table {
-            margin-top: 20px;
+            margin-top: 30px;
             width: 50%;
+            box-shadow: var(--shadow-sm);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
         }
         
         .budget-facebook {
@@ -167,7 +366,7 @@
         
         .highlight-yellow {
             background: #FFEB3B;
-            font-weight: bold;
+            font-weight: 600;
         }
         
         .text-right {
@@ -178,75 +377,245 @@
             text-align: center;
         }
         
+        .edit-note {
+            color: var(--primary-color);
+            font-size: 14px;
+            font-style: italic;
+            margin-left: 10px;
+            display: inline-block;
+            background: rgba(67, 97, 238, 0.1);
+            padding: 5px 10px;
+            border-radius: 4px;
+        }
+        
         .loading {
             display: none;
             text-align: center;
-            padding: 20px;
+            padding: 30px;
         }
         
         .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #007bff;
+            border: 4px solid rgba(0,0,0,0.1);
+            border-top: 4px solid var(--primary-color);
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
+            width: 50px;
+            height: 50px;
             animation: spin 1s linear infinite;
-            margin: 0 auto;
+            margin: 0 auto 15px;
         }
         
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        /* Error message styling */
+        .error-message {
+            background: rgba(247, 37, 133, 0.1);
+            color: var(--warning-color);
+            padding: 12px 15px;
+            border-radius: var(--radius-sm);
+            margin-top: 15px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .error-message i {
+            font-size: 18px;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .container, .login-container {
+                padding: 25px;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .budget-table {
+                width: 100%;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+                justify-content: center;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>📊 Tạo Báo Cáo Quảng Cáo Excel</h1>
+    <!-- Login Form -->
+    <div id="loginContainer" class="login-container">
+        <div class="login-icon">
+            <i class="fas fa-user-shield"></i>
+        </div>
+        <h1>Đăng Nhập</h1>
+        <div class="input-section">
+            <div class="input-card">
+                <div class="input-group">
+                    <label><i class="fas fa-user"></i> Tên đăng nhập:</label>
+                    <input type="text" id="username" placeholder="Nhập tên đăng nhập">
+                </div>
+                <div class="input-group">
+                    <label><i class="fas fa-lock"></i> Mật khẩu:</label>
+                    <input type="password" id="password" placeholder="Nhập mật khẩu">
+                </div>
+                <div id="loginError" class="error-message" style="display: none;">
+                    <i class="fas fa-exclamation-circle"></i> Tên đăng nhập hoặc mật khẩu không đúng!
+                </div>
+            </div>
+            <div class="button-group">
+                <button class="btn-primary" onclick="login()"><i class="fas fa-sign-in-alt"></i> Đăng Nhập</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Application (hidden until login) -->
+    <div id="appContainer" class="container" style="display: none;">
+        <div class="app-header">
+            <h1><i class="fas fa-chart-line"></i> Tạo Báo Cáo Quảng Cáo</h1>
+        </div>
         
         <div class="input-section">
-            <h3>Thông tin báo cáo</h3>
+            <div class="input-title"><i class="fas fa-file-alt input-icon"></i> Thông tin báo cáo</div>
             
-            <div class="input-group">
-                <label>Upload file CSV từ Facebook Ads:</label>
-                <input type="file" id="csvFile" accept=".csv">
+            <div class="input-card">
+                <div class="input-group">
+                    <label>Upload file CSV từ Facebook Ads:</label>
+                    <input type="file" id="csvFile" accept=".csv">
+                </div>
+                <div class="input-group">
+                    <label>Số tiền mong muốn (VND):</label>
+                    <input type="number" id="targetAmount" value="37000000">
+                </div>
             </div>
-            
-            <div class="input-group">
-                <label>Số tiền mong muốn (VND):</label>
-                <input type="number" id="targetAmount" value="37000000">
+
+            <div class="input-title"><i class="fab fa-facebook input-icon"></i> Facebook</div>
+            <div class="input-card">
+                <div class="input-group">
+                    <label>Tổng nạp Facebook (VND):</label>
+                    <input type="number" id="fbBudget" value="37000000">
+                </div>
+                <div class="input-group">
+                    <label>Còn tháng trước Facebook (VND):</label>
+                    <input type="number" id="fbRemaining" value="3621814">
+                </div>
             </div>
-            
-            <div class="input-group">
-                <label>Tổng nạp Facebook (VND):</label>
-                <input type="number" id="fbBudget" value="37000000">
+
+            <div class="input-title"><i class="fas fa-map-marker-alt input-icon"></i> Cơ sở</div>
+            <div class="input-card">
+                <div class="input-group">
+                    <label>Chọn cơ sở:</label>
+                    <select id="location" class="form-select">
+                        <option value="hanoi">Hà Nội</option>
+                        <option value="haiduong">Hải Dương</option>
+                    </select>
+                </div>
             </div>
-            
-            <div class="input-group">
-                <label>Còn tháng trước (VND):</label>
-                <input type="number" id="fbRemaining" value="3621814">
+
+            <div class="input-title"><i class="fas fa-globe input-icon"></i> Google / Zalo / TikTok</div>
+            <div class="input-card">
+                <div class="input-group">
+                    <label>Tổng nạp Google / Zalo / TikTok (VND):</label>
+                    <input type="number" id="gztBudget" value="0">
+                </div>
+                <div class="input-group">
+                    <label>Còn tháng trước Google / Zalo / TikTok (VND):</label>
+                    <input type="number" id="gztRemaining" value="0">
+                </div>
+                <div class="input-group">
+                    <label>Còn lại Google / Zalo / TikTok (VND):</label>
+                    <input type="number" id="gztRemainingAfterInput" value="0">
+                </div>
             </div>
             
             <div class="button-group">
-                <button class="btn-primary" onclick="processReport()">🔄 Xử lý báo cáo</button>
-                <button class="btn-success" id="downloadBtn" onclick="downloadExcel()" style="display:none">📥 Tải xuống Excel</button>
+                <button class="btn-primary" onclick="processReport()"><i class="fas fa-sync-alt"></i> Xử lý báo cáo</button>
+                <button class="btn-success" id="downloadBtn" onclick="downloadExcel()" style="display:none"><i class="fas fa-file-excel"></i> Tải xuống Excel</button>
+                <button class="btn-success" id="downloadPdfBtn" onclick="downloadPDF()" style="display:none"><i class="fas fa-file-pdf"></i> Tải xuống PDF</button>
+                <button class="btn-success" id="downloadJpgBtn" onclick="downloadJPG()" style="display:none"><i class="fas fa-file-image"></i> Tải xuống JPG</button>
             </div>
+
         </div>
         
         <div class="loading" id="loading">
             <div class="spinner"></div>
-            <p>Đang xử lý...</p>
+            <p><i class="fas fa-cog fa-spin"></i> Đang xử lý...</p>
         </div>
         
         <div class="preview-section" id="preview" style="display:none">
-            <h3>Xem trước báo cáo:</h3>
+            <h3><i class="fas fa-eye"></i> Xem trước báo cáo <span class="edit-note"><i class="fas fa-pencil-alt"></i> Bạn có thể chỉnh sửa trực tiếp các ô trong bảng</span></h3>
             <table id="reportTable"></table>
             
             <table class="budget-table" id="budgetTable"></table>
         </div>
     </div>
+    </div>
 
     <script>
+        // Authentication credentials - HIGHLIGHT: Thông tin đăng nhập có thể thay đổi ở đây
+        const AUTH_CREDENTIALS = {
+            username: "admin",
+            password: "nguyenduc139@"
+        };
+
+        // Check if user is already logged in
+        function checkAuth() {
+            const isAuthenticated = localStorage.getItem('isAuthenticated');
+            if (isAuthenticated === 'true') {
+                document.getElementById('loginContainer').style.display = 'none';
+                document.getElementById('appContainer').style.display = 'block';
+            }
+        }
+
+        // Run auth check on page load
+        checkAuth();
+
+        // Login function
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (username === AUTH_CREDENTIALS.username && password === AUTH_CREDENTIALS.password) {
+                // Set authentication in localStorage
+                localStorage.setItem('isAuthenticated', 'true');
+                
+                // Hide login, show app
+                document.getElementById('loginContainer').style.display = 'none';
+                document.getElementById('appContainer').style.display = 'block';
+                
+                // Clear login error if it was shown
+                document.getElementById('loginError').style.display = 'none';
+            } else {
+                // Show error message
+                document.getElementById('loginError').style.display = 'block';
+                
+                // Clear password field
+                document.getElementById('password').value = '';
+            }
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('isAuthenticated');
+            document.getElementById('loginContainer').style.display = 'block';
+            document.getElementById('appContainer').style.display = 'none';
+        }
+
+        // Allow login with Enter key
+        document.getElementById('password').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                login();
+            }
+        });
         let processedData = null;
         let workbook = null;
 
@@ -263,240 +632,756 @@
             const reader = new FileReader();
             
             reader.onload = async function(e) {
-                const csvContent = e.target.result;
-                const targetAmount = parseFloat(document.getElementById('targetAmount').value);
-                
                 try {
-                    // Send to webhook for processing
-                    const response = await fetch('https://primary-production-55bc0.up.railway.app/webhook/process-ads-report', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            csvData: csvContent,
-                            targetAmount: targetAmount,
-                            fbTotalBudget: document.getElementById('fbBudget').value,
-                            reportMonth: new Date().toISOString().slice(0, 7) + '-01'
-                        })
-                    });
+                    const csvContent = e.target.result;
+                    const targetAmountInput = parseFloat(document.getElementById('targetAmount').value);
+                    const fbBudget = parseFloat(document.getElementById('fbBudget').value);
+                    const fbRemaining = parseFloat(document.getElementById('fbRemaining').value);
+                    const gztBudget = parseFloat(document.getElementById('gztBudget').value);
+                    const gztRemaining = parseFloat(document.getElementById('gztRemaining').value);
+                    const gztRemainingAfterInput = parseFloat(document.getElementById('gztRemainingAfterInput').value) || 0;
                     
-                    if (response.ok) {
-                        const processedCSV = await response.text();
-                        generateExcelReport(processedCSV);
-                    } else {
+                    try {
+                        const location = document.getElementById('location').value;
+                        
+                        // Calculate Google spent amount
+                        // Số tiền Google đã chi tiêu = Tổng nạp Google/tiktok/zalo + Số tiền còn tháng trước - Số tiền còn lại
+                        const googleSpent = gztBudget + gztRemaining - gztRemainingAfterInput;
+                        
+                        // Calculate adjusted targetAmount
+                        // targetAmount = Số tiền mong muốn - Số tiền Google đã chi tiêu
+                        const adjustedTargetAmount = targetAmountInput - googleSpent;
+                        
+                        // Send to webhook for processing
+                        const response = await fetch('https://primary-production-55bc0.up.railway.app/webhook/process-ads-report', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                csvData: csvContent,
+                                targetAmount: adjustedTargetAmount,
+                                fbTotalBudget: fbBudget,
+                                fbRemaining: fbRemaining,
+                                gztBudget: gztBudget,
+                                gztRemaining: gztRemaining,
+                                location: location,
+                                reportMonth: new Date().toISOString().slice(0, 7) + '-01',
+                                maxInvites: 1  // Set max invites to 1 as requested
+                            })
+                        });
+                        
+                        if (response.ok) {
+                            try {
+                                // Parse the JSON response
+                                const responseData = await response.json();
+                                console.log("Full webhook response:", JSON.stringify(responseData, null, 2));
+                                
+                                // Check if the response has the expected structure
+                                if (responseData && responseData.response && responseData.response.body) {
+                                    console.log("Response body found, type:", typeof responseData.response.body);
+                                    console.log("Response body content:", JSON.stringify(responseData.response.body, null, 2));
+                                    
+                                    // Verify if the body contains campaign data
+                                    if (Array.isArray(responseData.response.body)) {
+                                        console.log("Campaign data is an array with", responseData.response.body.length, "items");
+                                        
+                                        // Log first campaign for debugging
+                                        if (responseData.response.body.length > 0) {
+                                            console.log("First campaign data:", JSON.stringify(responseData.response.body[0], null, 2));
+                                        }
+                                    } else {
+                                        console.warn("Response body is not an array:", typeof responseData.response.body);
+                                    }
+                                } else {
+                                    console.warn("Response does not have expected structure");
+                                    console.log("Response keys:", Object.keys(responseData || {}));
+                                    if (responseData && responseData.response) {
+                                        console.log("Response.response keys:", Object.keys(responseData.response));
+                                    }
+                                }
+                                
+                                // Generate Excel and show preview (without downloading)
+                                // Tự động nhận diện kiểu dữ liệu trả về từ webhook
+                                let campaignsArr = null;
+                                if (Array.isArray(responseData) && responseData.length > 0 && typeof responseData[0] === 'object') {
+                                    campaignsArr = responseData;
+                                } else if (
+                                    responseData &&
+                                    responseData.response &&
+                                    Array.isArray(responseData.response.body) &&
+                                    responseData.response.body.length > 0
+                                ) {
+                                    campaignsArr = responseData.response.body;
+                                }
+                                if (campaignsArr) {
+                                    // Đóng gói lại thành object như generateExcelPreview mong đợi
+                                    generateExcelPreview({ response: { body: campaignsArr } }, targetAmount, fbBudget, fbRemaining, gztBudget, gztRemaining);
+                                } else {
+                                    // Hiển thị response thô ra UI nếu không đúng cấu trúc
+                                    document.getElementById('loading').style.display = 'none';
+                                    let preview = document.getElementById('preview');
+                                    preview.style.display = 'block';
+                                    let table = document.getElementById('reportTable');
+                                    table.innerHTML = '<tr><td style="color:red">Không nhận được dữ liệu chiến dịch hợp lệ từ webhook.<br>Response thô:</td></tr>' +
+                                        '<tr><td><pre style="white-space:pre-wrap;max-width:900px">' +
+                                        JSON.stringify(responseData, null, 2) +
+                                        '</pre></td></tr>';
+                                    document.getElementById('downloadBtn').style.display = 'none';
+                                }
+                            } catch (jsonError) {
+                                console.error('Error parsing JSON response:', jsonError);
+                                const responseText = await response.text();
+                                let preview = document.getElementById('preview');
+                                preview.style.display = 'block';
+                                let table = document.getElementById('reportTable');
+                                table.innerHTML = '<tr><td style="color:red">Lỗi khi phân tích dữ liệu từ webhook.<br>Chi tiết lỗi: ' +
+                                    jsonError +
+                                    '<br>Response thô:</td></tr>' +
+                                    '<tr><td><pre style="white-space:pre-wrap;max-width:900px">' +
+                                    responseText +
+                                    '</pre></td></tr>';
+                                document.getElementById('downloadBtn').style.display = 'none';
+                            }
+                        } else {
+                            console.error('Webhook error:', await response.text());
+                            alert('Lỗi khi xử lý báo cáo. Đang sử dụng xử lý cục bộ.');
+                            // Fallback to local processing
+                            generateExcelPreview(null, targetAmount, fbBudget, fbRemaining, gztBudget, gztRemaining);
+                        }
+                    } catch (error) {
+                        console.error('Webhook error:', error);
+                        alert('Lỗi kết nối đến webhook. Đang sử dụng xử lý cục bộ.');
                         // Fallback to local processing
-                        generateExcelReport(csvContent, targetAmount);
+                        generateExcelPreview(null, targetAmount, fbBudget, fbRemaining, gztBudget, gztRemaining);
                     }
                 } catch (error) {
-                    console.error('Webhook error, using local processing:', error);
-                    generateExcelReport(csvContent, targetAmount);
+                    console.error('Error processing report:', error);
+                    alert('Đã xảy ra lỗi khi xử lý báo cáo: ' + error.message);
+                } finally {
+                    // Always hide loading spinner
+                    document.getElementById('loading').style.display = 'none';
                 }
-                
+            };
+            
+            reader.onerror = function() {
+                console.error('Error reading file');
+                alert('Lỗi khi đọc file CSV');
                 document.getElementById('loading').style.display = 'none';
             };
             
             reader.readAsText(file);
         }
 
-        function generateExcelReport(csvData, targetAmount) {
-            // Parse CSV
-            const lines = csvData.split('\n').filter(line => line.trim());
-            const headers = lines[0].split(';');
-            const campaigns = [];
+        function generateExcelPreview(responseData, targetAmount, fbBudget, fbRemaining, gztBudget, gztRemaining) {
+            // Generate Excel without downloading
+            const wb = generateExcelReport(responseData, targetAmount, fbBudget, fbRemaining, gztBudget, gztRemaining);
             
-            for (let i = 1; i < lines.length; i++) {
-                const values = lines[i].split(';');
-                if (values.length >= headers.length) {
-                    const campaign = {};
-                    headers.forEach((header, index) => {
-                        campaign[header.trim()] = values[index] || '';
-                    });
-                    campaigns.push(campaign);
+            // Show download buttons
+            document.getElementById('downloadBtn').style.display = 'inline-block';
+            document.getElementById('downloadPdfBtn').style.display = 'inline-block';
+            document.getElementById('downloadJpgBtn').style.display = 'inline-block';
+            
+            // Store workbook for later download
+            workbook = wb;
+        }
+
+        function downloadExcel() {
+            if (!workbook) return;
+            
+            try {
+                // Get the updated data from the editable table
+                updateWorkbookFromTable();
+                
+                // Convert workbook to binary string
+                const wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'binary' });
+                
+                // Convert binary string to ArrayBuffer
+                function s2ab(s) {
+                    const buf = new ArrayBuffer(s.length);
+                    const view = new Uint8Array(buf);
+                    for (let i = 0; i < s.length; i++) {
+                        view[i] = s.charCodeAt(i) & 0xFF;
+                    }
+                    return buf;
+                }
+                
+                // Create Blob and download
+                const blob = new Blob([s2ab(wbout)], { type: 'application/octet-stream' });
+                const fileName = `Báo_cáo_QC_${new Date().toISOString().slice(0, 10)}.xlsx`;
+                
+                // Create download link
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = fileName;
+                link.click();
+                
+                alert('Báo cáo Excel đã được tải xuống thành công!');
+            } catch (error) {
+                console.error('Error downloading Excel:', error);
+                alert('Lỗi khi tải xuống Excel: ' + error.message);
+            }
+        }
+
+        function updateWorkbookFromTable() {
+            // Get the table data
+            const table = document.getElementById('reportTable');
+            const rows = table.getElementsByTagName('tr');
+            
+            // Get the worksheet
+            const ws = workbook.Sheets['Báo cáo QC'];
+            
+            // Update campaign data (skip header row)
+            for (let i = 1; i < rows.length; i++) {
+                const cells = rows[i].getElementsByTagName('td');
+                
+                // Skip summary rows
+                if (cells.length < 10 || cells[0].colSpan > 1) continue;
+                
+                // Update each cell in the worksheet
+                for (let j = 0; j < cells.length; j++) {
+                    const cellRef = XLSX.utils.encode_cell({ r: i, c: j });
+                    const cellValue = cells[j].textContent.trim();
+                    
+                    // Update the cell value
+                    ws[cellRef] = { v: cellValue, t: 's' };
                 }
             }
-            
-            // Calculate totals and scale if needed
-            let totalSpent = 0;
-            campaigns.forEach(c => {
-                const amount = parseInt((c['Số tiền đã chi tiêu (VND)'] || '0').replace(/[^0-9]/g, ''));
-                totalSpent += amount;
-            });
-            
-            if (targetAmount && targetAmount > 0) {
-                const scaleFactor = (targetAmount - targetAmount * 0.06) / totalSpent;
-                campaigns.forEach(c => {
-                    const amount = parseInt((c['Số tiền đã chi tiêu (VND)'] || '0').replace(/[^0-9]/g, ''));
-                    c['Số tiền đã chi tiêu (VND)'] = Math.round(amount * scaleFactor);
-                    
-                    const reach = parseInt(c['Người tiếp cận'] || '0');
-                    c['Người tiếp cận'] = Math.round(reach * scaleFactor * 1.1);
-                    
-                    const impressions = parseInt(c['Lượt hiển thị'] || '0');
-                    c['Lượt hiển thị'] = Math.round(impressions * scaleFactor * 1.2);
-                });
-                totalSpent = campaigns.reduce((sum, c) => sum + c['Số tiền đã chi tiêu (VND)'], 0);
-            }
-            
-            // Create Excel workbook
-            const wb = XLSX.utils.book_new();
-            
-            // Prepare data for Excel
-            const excelData = [];
-            
-            // Headers
-            excelData.push([
-                'Tên chiến dịch',
-                'Trạng thái phân phối',
-                'Cấp độ phân phối',
-                'Tên nhóm quảng cáo',
-                'Cài đặt phân bổ',
-                'Loại kết quả',
-                'Kết quả',
-                'Người tiếp cận',
-                'Lượt hiển thị',
-                'Chi phí trên mỗi kết quả',
-                'Số tiền đã chi tiêu (VND)',
-                'Bắt đầu báo cáo',
-                'Kết thúc báo cáo'
-            ]);
-            
-            // Campaign data
-            campaigns.forEach(c => {
+        }
+
+        function generateExcelReport(responseData, targetAmount, fbBudget, fbRemaining, gztBudget, gztRemaining) {
+            const location = document.getElementById('location').value;
+            try {
+                // Prepare data for Excel
+                const excelData = [];
+                
+                // Headers - match the sample file exactly
                 excelData.push([
-                    c['Tên chiến dịch'] || '',
-                    'campaign',
-                    'campaign',
-                    '',
-                    'Lượt click trong 7 ngày hoặc lượt xem trong 1 ngày',
-                    c['Loại kết quả'] || 'Lượt bắt đầu cuộc trò chuyện qua tin nhắn',
-                    c['Kết quả'] || '',
-                    c['Người tiếp cận'] || '',
-                    c['Lượt hiển thị'] || '',
-                    c['Chi phí trên mỗi kết quả'] || '',
-                    c['Số tiền đã chi tiêu (VND)'] || '',
-                    c['Bắt đầu báo cáo'] || '2025-05-01',
-                    c['Kết thúc báo cáo'] || '2025-05-31'
+                    'Tên chiến dịch',
+                    'Trạng thái phân phối',
+                    'Cấp độ phân phối',
+                    'Cài đặt phân bổ',
+                    'Loại kết quả',
+                    'Người tiếp cận',
+                    'Lượt hiển thị',
+                    'Số tiền đã chi tiêu (VND)',
+                    'Bắt đầu báo cáo',
+                    'Kết thúc báo cáo'
                 ]);
-            });
-            
-            // Summary rows
-            const fbFee = Math.round(targetAmount * 0.06);
-            const fbTotal = targetAmount || (totalSpent + fbFee);
-            
-            // Add summary rows
-            excelData.push(['', '', '', '', '', 'THUẾ 6% FACEBOOK', '', '', '', '', formatNumber(fbFee), '', '']);
-            excelData.push(['', '', '', '', '', 'TỔNG TIỀN QC FACEBOOK', '', '', '', '', formatNumber(fbTotal), '', '']);
-            excelData.push(['', '', '', '', '', 'TIỀN QC GOOGLE + thuế', '', '', '', '', '0', '', '']);
-            excelData.push(['', '', '', '', '', 'QC Tiktok, Zalo', '', '', '', '', '0', '', '']);
-            excelData.push(['', '', '', '', '', 'CK Google', '', '', '', '', '0', '', '']);
-            excelData.push(['', '', '', '', '', 'CK FACEBOOK', '', '', '', '', '0', '', '']);
-            excelData.push(['', '', '', '', '', 'TỔNG', '', '', '', '', formatNumber(fbTotal), '', '']);
-            
-            // Create worksheet
-            const ws = XLSX.utils.aoa_to_sheet(excelData);
-            
-            // Add budget table
-            const budgetData = [
-                ['Tổng nạp Facebook', formatNumber(fbTotal), '', 'Tiền Doanh số chốt hồ'],
-                ['Còn tháng trước:', formatNumber(3621814), '', ''],
-                ['Sử dụng:', formatNumber(fbTotal), '', ''],
-                ['Còn lại:', formatNumber(3621814), '', ''],
-                ['', '', '', ''],
-                ['Tổng nạp Google', '0', '', ''],
-                ['Hải Dương Sử dụng:', '0', '', ''],
-                ['Còn lại:', '0', '', ''],
-                ['** Công nợ HĐ:', '0', '', '']
-            ];
-            
-            // Add budget table to sheet starting from row 20
-            budgetData.forEach((row, index) => {
-                row.forEach((cell, colIndex) => {
-                    const cellRef = XLSX.utils.encode_cell({ r: 19 + index, c: colIndex });
-                    ws[cellRef] = { v: cell, t: 's' };
+                
+                // Use data from webhook response if available
+                let campaigns = [];
+                
+                if (responseData && responseData.response && Array.isArray(responseData.response.body)) {
+                    // Extract campaign data from webhook response
+                    console.log("Webhook response data:", JSON.stringify(responseData.response.body));
+                    
+                    responseData.response.body.forEach(item => {
+                        // Calculate cost per result if available
+                        let costPerResult = '';
+                        // Handle different formats of spent amount (string with formatting or number)
+                        let spent = 0;
+                        if (item['Số tiền đã chi tiêu (VND)']) {
+                            if (typeof item['Số tiền đã chi tiêu (VND)'] === 'string') {
+                                spent = parseFloat(item['Số tiền đã chi tiêu (VND)'].replace(/[^\d.-]/g, ''));
+                            } else {
+                                spent = parseFloat(item['Số tiền đã chi tiêu (VND)']);
+                            }
+                        }
+                        
+                        // Handle results which might be a string or number
+                        let results = 0;
+                        if (item['Kết quả'] !== undefined) {
+                            results = typeof item['Kết quả'] === 'string' ? 
+                                parseInt(item['Kết quả'].replace(/[^\d.-]/g, '')) : 
+                                parseInt(item['Kết quả']);
+                        }
+                        
+                        if (spent > 0 && results > 0) {
+                            costPerResult = Math.round(spent / results).toString();
+                        }
+                        
+                        campaigns.push({
+                            'Tên chiến dịch': item['Tên chiến dịch'] || '',
+                            'Cấp độ phân phối': item['Cấp độ phân phối'] || 'campaign',
+                            'Cài đặt phân bổ': item['Cài đặt phân bổ'] || 'Lượt click trong 7 ngày hoặc lượt xem trong 1 ngày',
+                            'Kết quả': item['Kết quả'] || '',
+                            'Người tiếp cận': item['Người tiếp cận'] || '',
+                            'Lượt hiển thị': item['Lượt hiển thị'] || '',
+                            'Chi phí trên mỗi kết quả': costPerResult,
+                            'Số tiền đã chi tiêu (VND)': item['Số tiền đã chi tiêu (VND)'] || '',
+                            'Bắt đầu báo cáo': item['Bắt đầu báo cáo'] || '',
+                            'Kết thúc báo cáo': item['Kết thúc báo cáo'] || ''
+                        });
+                    });
+                    
+                    // Log the processed campaigns to verify
+                    console.log("Processed campaigns:", campaigns);
+                }
+                
+                // If no data from webhook or empty, show error
+                if (campaigns.length === 0) {
+                    console.error("No campaign data received from webhook!");
+                    alert('Không nhận được dữ liệu chiến dịch từ webhook. Vui lòng kiểm tra lại.');
+                    return null;
+                } else {
+                    // Add campaign data from webhook response
+                    console.log("Using webhook data for report - campaign count:", campaigns.length);
+                    campaigns.forEach(c => {
+                        // Convert date format if needed (from Excel serial number to date string)
+                        let startDate = c['Bắt đầu báo cáo'];
+                        let endDate = c['Kết thúc báo cáo'];
+                        
+                        // If dates are Excel serial numbers, convert them
+                        if (!isNaN(startDate) && startDate > 0) {
+                            const date = new Date(Date.UTC(1900, 0, startDate - 1));
+                            startDate = date.toISOString().slice(0, 10);
+                        }
+                        
+                        if (!isNaN(endDate) && endDate > 0) {
+                            const date = new Date(Date.UTC(1900, 0, endDate - 1));
+                            endDate = date.toISOString().slice(0, 10);
+                        }
+                        
+                        // Format the amount spent for display - keep original value
+                        let amountSpent = c['Số tiền đã chi tiêu (VND)'] || '';
+                        // Don't format here, keep the raw number for Excel
+                        
+                        // Log each campaign being added to the report
+                        console.log("Adding campaign to report:", c['Tên chiến dịch']);
+                        
+                        excelData.push([
+                            c['Tên chiến dịch'] || '',
+                            'active',
+                            'campaign',
+                            c['Cài đặt phân bổ'] || 'Lượt click trong 7 ngày hoặc lượt xem trong 1 ngày',
+                            'Lượt bắt đầu cuộc trò chuyện qua tin nhắn',
+                            c['Người tiếp cận'] || '',
+                            c['Lượt hiển thị'] || '',
+                            amountSpent,
+                            startDate || '2025-05-01',
+                            endDate || '2025-05-31'
+                        ]);
+                    });
+                }
+                
+                // Create Excel workbook
+                const wb = XLSX.utils.book_new();
+                
+                // Tính toán tổng chi tiêu thực tế từ dữ liệu webhook
+                let totalSpent = 0;
+                campaigns.forEach(c => {
+                    let spent = 0;
+                    if (c['Số tiền đã chi tiêu (VND)']) {
+                        if (typeof c['Số tiền đã chi tiêu (VND)'] === 'string') {
+                            spent = parseFloat(c['Số tiền đã chi tiêu (VND)'].replace(/[^\d.-]/g, ''));
+                        } else {
+                            spent = parseFloat(c['Số tiền đã chi tiêu (VND)']);
+                        }
+                    }
+                    totalSpent += isNaN(spent) ? 0 : spent;
                 });
-            });
-            
-            // Set column widths
-            ws['!cols'] = [
-                { wch: 30 }, // Tên chiến dịch
-                { wch: 15 }, // Trạng thái
-                { wch: 15 }, // Cấp độ
-                { wch: 20 }, // Nhóm QC
-                { wch: 35 }, // Cài đặt
-                { wch: 30 }, // Loại kết quả
-                { wch: 10 }, // Kết quả
-                { wch: 15 }, // Người tiếp cận
-                { wch: 15 }, // Lượt hiển thị
-                { wch: 20 }, // Chi phí/KQ
-                { wch: 20 }, // Số tiền
-                { wch: 15 }, // Bắt đầu
-                { wch: 15 }  // Kết thúc
-            ];
-            
-            XLSX.utils.book_append_sheet(wb, ws, 'Báo cáo QC');
-            
-            workbook = wb;
-            
-            // Show preview
-            displayPreview(excelData, budgetData);
-            document.getElementById('downloadBtn').style.display = 'inline-block';
+
+                // Add summary rows to Excel data - match sample file format exactly
+                const fbFee = Math.round(totalSpent * 0.06);
+                const fbTotal = totalSpent + fbFee;
+                
+                // Calculate Google usage based on location for Excel data
+                const gztRemainingAfterInput = parseFloat(document.getElementById('gztRemainingAfterInput').value) || 0;
+                const gztUsed = gztBudget + gztRemaining - gztRemainingAfterInput;
+                let hanoiUsage = 0;
+                let haiduongUsage = 0;
+                if (location === 'hanoi') {
+                    hanoiUsage = gztUsed;
+                } else {
+                    haiduongUsage = gztUsed;
+                }
+                
+                // Use location-specific usage for Google total in Excel
+                const googleTotal = location === 'hanoi' ? hanoiUsage : haiduongUsage;
+                const grandTotal = fbTotal + googleTotal;
+                
+                // Add summary rows exactly like the sample
+                excelData.push(['THUẾ 6% FACEBOOK', 'THUẾ 6% FACEBOOK', 'THUẾ 6% FACEBOOK', 'THUẾ 6% FACEBOOK', 'THUẾ 6% FACEBOOK', 'THUẾ 6% FACEBOOK', 'THUẾ 6% FACEBOOK', fbFee, '', '']);
+                excelData.push(['TỔNG TIỀN QC FACEBOOK', 'TỔNG TIỀN QC FACEBOOK', 'TỔNG TIỀN QC FACEBOOK', 'TỔNG TIỀN QC FACEBOOK', 'TỔNG TIỀN QC FACEBOOK', 'TỔNG TIỀN QC FACEBOOK', 'TỔNG TIỀN QC FACEBOOK', fbTotal, '', '']);
+                excelData.push(['QC Google + thuế', 'QC Google + thuế', 'QC Google + thuế', 'QC Google + thuế', 'QC Google + thuế', 'QC Google + thuế', 'QC Google + thuế', googleTotal, '', '']);
+                excelData.push(['CK Google', 'CK Google', 'CK Google', 'CK Google', 'CK Google', 'CK Google', 'CK Google', 0, '', '']);
+                excelData.push(['CK FACEBOOK', 'CK FACEBOOK', 'CK FACEBOOK', 'CK FACEBOOK', 'CK FACEBOOK', 'CK FACEBOOK', 'CK FACEBOOK', 0, '', '']);
+                excelData.push(['TỔNG', 'TỔNG', 'TỔNG', 'TỔNG', 'TỔNG', 'TỔNG', 'TỔNG', grandTotal, '', '']);
+                
+                // Add budget information
+                const fbUsed = fbTotal;
+                // Fix the calculation for "Còn lại" in Facebook section
+                const fbRemainingAfter = fbBudget + fbRemaining - fbUsed;
+                
+                // Log the calculation for debugging
+                console.log("Facebook Còn lại calculation:");
+                console.log("fbBudget:", fbBudget);
+                console.log("fbRemaining:", fbRemaining);
+                console.log("fbUsed:", fbUsed);
+                console.log("fbRemainingAfter:", fbRemainingAfter);
+                
+                // Use the already calculated values from above
+                const gztRemainingAfter = gztRemainingAfterInput; // Use the input value directly
+                
+                // Use the calculated values for Excel data
+                excelData.push(['Tổng nạp Facebook', fbBudget, '', '', '', '', '', '', '', '']);
+                excelData.push(['Còn tháng trước:', fbRemaining, '', '', '', '', '', '', '', '']);
+                excelData.push(['Sử dụng:', fbTotal, '', '', '', '', '', '', '', '']);
+                excelData.push(['Còn lại:', fbBudget + fbRemaining - fbTotal, '', '', '', '', '', '', '', '']);
+                excelData.push(['', '', '', '', '', '', '', '', '', '']);
+                excelData.push(['Tổng nạp Google + Tiktok + Zalo', gztBudget, '', '', '', '', '', '', '', '']);
+                excelData.push(['Còn tháng trước:', gztRemaining, '', '', '', '', '', '', '', '']);
+                excelData.push(['Hà Nội sử dụng', hanoiUsage, '', '', '', '', '', '', '', '']);
+                excelData.push(['Hải Dương Sử dụng:', haiduongUsage, '', '', '', '', '', '', '', '']);
+                excelData.push(['Còn lại:', gztRemainingAfterInput, '', '', '', '', '', '', '', '']);
+                excelData.push(['** Công nợ Hải Dương: ', haiduongUsage, '', '', '', '', '', '', '', '']);
+                
+                // Create worksheet
+                const ws = XLSX.utils.aoa_to_sheet(excelData);
+                
+                // Add budget table with actual values from inputs (using already declared variables)
+                const budgetData = [
+                    ['Tổng nạp Facebook', formatNumber(fbBudget), ''],
+                    ['Còn tháng trước:', formatNumber(fbRemaining), ''],
+                    ['Sử dụng:', formatNumber(fbTotal), ''],
+                    ['Còn lại:', formatNumber(fbRemainingAfter), ''],
+                    ['', '', ''],
+                    ['Tổng nạp Google + TikTok', formatNumber(gztBudget), ''],
+                    ['Còn tháng trước:', formatNumber(gztRemaining), ''],
+                    ['Hà Nội sử dụng:', formatNumber(hanoiUsage), ''],
+                    ['Hải Dương Sử dụng:', formatNumber(haiduongUsage), ''],
+                    ['Còn lại:', formatNumber(gztRemainingAfter), ''],
+                    ['** Công nợ Hải Dương:', formatNumber(haiduongUsage), '']
+                ];
+                
+                // Budget data is now included in excelData, no need for separate budget table
+                
+                // Set column widths to match sample file
+                ws['!cols'] = [
+                    { wch: 30 }, // Tên chiến dịch
+                    { wch: 20 }, // Trạng thái
+                    { wch: 15 }, // Cấp độ
+                    { wch: 35 }, // Cài đặt
+                    { wch: 30 }, // Loại kết quả
+                    { wch: 15 }, // Người tiếp cận
+                    { wch: 15 }, // Lượt hiển thị
+                    { wch: 20 }, // Số tiền
+                    { wch: 15 }, // Bắt đầu
+                    { wch: 15 }  // Kết thúc
+                ];
+                
+                XLSX.utils.book_append_sheet(wb, ws, 'Raw Data Report');
+                
+                workbook = wb;
+                
+                // Show preview
+                displayPreview(excelData, budgetData);
+                document.getElementById('downloadBtn').style.display = 'inline-block';
+                
+                return wb;
+            } catch (error) {
+                console.error('Error generating Excel report:', error);
+                alert('Lỗi khi tạo báo cáo Excel: ' + error.message);
+                document.getElementById('loading').style.display = 'none';
+                return null;
+            }
         }
 
         function displayPreview(data, budgetData) {
             const table = document.getElementById('reportTable');
             table.innerHTML = '';
             
-            data.forEach((row, rowIndex) => {
+            // Create table header row - match sample file
+            const headerRow = document.createElement('tr');
+            const headers = [
+                'Tên chiến dịch', 'Trạng thái phân phối', 'Cấp độ phân phối', 
+                'Cài đặt phân bổ', 'Loại kết quả', 'Người tiếp cận', 
+                'Lượt hiển thị', 'Số tiền đã chi tiêu (VND)', 
+                'Bắt đầu báo cáo', 'Kết thúc báo cáo'
+            ];
+            
+            headers.forEach(header => {
+                const th = document.createElement('th');
+                th.textContent = header;
+                headerRow.appendChild(th);
+            });
+            table.appendChild(headerRow);
+            
+            // Calculate totals from campaign data first
+            let totalSpent = 0;
+            let campaignRowCount = 0;
+            
+            // Display campaign data first
+            for (let i = 1; i < data.length; i++) {
+                // Stop when we hit summary rows
+                if (data[i][0] === 'THUẾ 6% FACEBOOK') {
+                    break;
+                }
+                
                 const tr = document.createElement('tr');
-                row.forEach((cell, colIndex) => {
-                    const td = document.createElement(rowIndex === 0 ? 'th' : 'td');
-                    td.textContent = cell;
+                campaignRowCount++;
+                
+                data[i].forEach((cell, colIndex) => {
+                    const td = document.createElement('td');
+                    td.contentEditable = true;
                     
-                    // Apply styles based on content
-                    if (cell === 'THUẾ 6% FACEBOOK') {
-                        tr.className = 'facebook-header';
-                    } else if (cell === 'TỔNG TIỀN QC FACEBOOK') {
-                        tr.className = 'facebook-total';
-                    } else if (cell === 'TIỀN QC GOOGLE + thuế') {
-                        tr.className = 'google-header';
-                    } else if (cell === 'QC Tiktok, Zalo') {
-                        tr.className = 'tiktok-header';
-                    } else if (cell === 'CK Google' || cell === 'CK FACEBOOK') {
-                        tr.className = 'ck-header';
-                    } else if (cell === 'TỔNG') {
-                        tr.className = 'grand-total';
-                    }
-                    
-                    if (colIndex === 10 && rowIndex > 0) {
+                    // Format money column and calculate total
+                    if (colIndex === 7) {
                         td.className = 'text-right';
+                        let amount = 0;
+                        
+                        // Handle different number formats from webhook
+                        if (typeof cell === 'string') {
+                            // Handle formats like "8.481.000" or "8,481,000"
+                            if (cell.includes('.') && cell.split('.').length > 2) {
+                                // Format like "8.481.000" - remove dots and parse
+                                amount = parseInt(cell.replace(/\./g, ''));
+                            } else if (cell.includes(',') && cell.split(',').length > 2) {
+                                // Format like "8,481,000" - remove commas and parse
+                                amount = parseInt(cell.replace(/,/g, ''));
+                            } else {
+                                // Regular number string
+                                amount = parseInt(cell.replace(/[^\d]/g, '')) || 0;
+                            }
+                        } else if (typeof cell === 'number') {
+                            amount = cell;
+                        }
+                        
+                        if (amount > 0) {
+                            totalSpent += amount;
+                            td.textContent = amount.toLocaleString('vi-VN');
+                        } else {
+                            td.textContent = cell;
+                        }
+                    } else {
+                        td.textContent = cell;
                     }
                     
                     tr.appendChild(td);
                 });
+                
                 table.appendChild(tr);
-            });
+            }
+            
+            // Now add summary rows with proper formatting
+            const location = document.getElementById('location').value;
+            const gztBudget = parseFloat(document.getElementById('gztBudget').value) || 0;
+            const gztRemaining = parseFloat(document.getElementById('gztRemaining').value) || 0;
+            const gztRemainingAfterInput = parseFloat(document.getElementById('gztRemainingAfterInput').value) || 0;
+            
+            // Calculate Google usage based on location
+            const gztUsed = gztBudget + gztRemaining - gztRemainingAfterInput;
+            let hanoiUsage = 0;
+            let haiduongUsage = 0;
+            if (location === 'hanoi') {
+                hanoiUsage = gztUsed;
+            } else {
+                haiduongUsage = gztUsed;
+            }
+            
+            // Use the location-specific usage for Google total
+            const fbTax = Math.round(totalSpent * 0.06);
+            const fbTotal = totalSpent + fbTax;
+            const googleTotal = location === 'hanoi' ? hanoiUsage : haiduongUsage; // Use location-specific usage
+            const grandTotal = fbTotal + googleTotal;
+            
+            // Make sure the budget table uses the same fbTotal value
+            budgetData[2][1] = formatNumber(fbTotal);
+            
+            // THUẾ 6% FACEBOOK
+            const fbTaxRow = document.createElement('tr');
+            fbTaxRow.className = 'facebook-header';
+            const fbTaxCell = document.createElement('td');
+            fbTaxCell.textContent = 'THUẾ 6% FACEBOOK';
+            fbTaxCell.colSpan = 7;
+            fbTaxRow.appendChild(fbTaxCell);
+            
+            const fbTaxAmountCell = document.createElement('td');
+            fbTaxAmountCell.textContent = fbTax.toLocaleString('vi-VN');
+            fbTaxAmountCell.className = 'text-right';
+            fbTaxRow.appendChild(fbTaxAmountCell);
+            
+            const fbTaxEmptyCell1 = document.createElement('td');
+            fbTaxEmptyCell1.textContent = '';
+            fbTaxRow.appendChild(fbTaxEmptyCell1);
+            
+            const fbTaxEmptyCell2 = document.createElement('td');
+            fbTaxEmptyCell2.textContent = '';
+            fbTaxRow.appendChild(fbTaxEmptyCell2);
+            
+            table.appendChild(fbTaxRow);
+            
+            // TỔNG TIỀN QC FACEBOOK
+            const fbTotalRow = document.createElement('tr');
+            fbTotalRow.className = 'facebook-total';
+            const fbTotalCell = document.createElement('td');
+            fbTotalCell.textContent = 'TỔNG TIỀN QC FACEBOOK';
+            fbTotalCell.colSpan = 7;
+            fbTotalRow.appendChild(fbTotalCell);
+            
+            const fbTotalAmountCell = document.createElement('td');
+            fbTotalAmountCell.textContent = fbTotal.toLocaleString('vi-VN');
+            fbTotalAmountCell.className = 'text-right';
+            fbTotalRow.appendChild(fbTotalAmountCell);
+            
+            const fbTotalEmptyCell1 = document.createElement('td');
+            fbTotalEmptyCell1.textContent = '';
+            fbTotalRow.appendChild(fbTotalEmptyCell1);
+            
+            const fbTotalEmptyCell2 = document.createElement('td');
+            fbTotalEmptyCell2.textContent = '';
+            fbTotalRow.appendChild(fbTotalEmptyCell2);
+            
+            table.appendChild(fbTotalRow);
+            
+            // QC Google + thuế
+            const googleRow = document.createElement('tr');
+            googleRow.className = 'google-header';
+            const googleCell = document.createElement('td');
+            googleCell.textContent = 'QC Google + thuế';
+            googleCell.colSpan = 7;
+            googleRow.appendChild(googleCell);
+            
+            const googleAmountCell = document.createElement('td');
+            googleAmountCell.textContent = googleTotal.toLocaleString('vi-VN');
+            googleAmountCell.className = 'text-right';
+            googleRow.appendChild(googleAmountCell);
+            
+            const googleEmptyCell1 = document.createElement('td');
+            googleEmptyCell1.textContent = '';
+            googleRow.appendChild(googleEmptyCell1);
+            
+            const googleEmptyCell2 = document.createElement('td');
+            googleEmptyCell2.textContent = '';
+            googleRow.appendChild(googleEmptyCell2);
+            
+            table.appendChild(googleRow);
+            
+            // Remove QC Tiktok, Zalo row - merged into Google row
+            
+            // CK Google
+            const ckGoogleRow = document.createElement('tr');
+            ckGoogleRow.className = 'ck-header';
+            const ckGoogleCell = document.createElement('td');
+            ckGoogleCell.textContent = 'CK Google';
+            ckGoogleCell.colSpan = 7;
+            ckGoogleRow.appendChild(ckGoogleCell);
+            
+            const ckGoogleAmountCell = document.createElement('td');
+            ckGoogleAmountCell.textContent = '0';
+            ckGoogleAmountCell.className = 'text-right';
+            ckGoogleRow.appendChild(ckGoogleAmountCell);
+            
+            const ckGoogleEmptyCell1 = document.createElement('td');
+            ckGoogleEmptyCell1.textContent = '';
+            ckGoogleRow.appendChild(ckGoogleEmptyCell1);
+            
+            const ckGoogleEmptyCell2 = document.createElement('td');
+            ckGoogleEmptyCell2.textContent = '';
+            ckGoogleRow.appendChild(ckGoogleEmptyCell2);
+            
+            table.appendChild(ckGoogleRow);
+            
+            // CK FACEBOOK
+            const ckFbRow = document.createElement('tr');
+            ckFbRow.className = 'ck-header';
+            const ckFbCell = document.createElement('td');
+            ckFbCell.textContent = 'CK FACEBOOK';
+            ckFbCell.colSpan = 7;
+            ckFbRow.appendChild(ckFbCell);
+            
+            const ckFbAmountCell = document.createElement('td');
+            ckFbAmountCell.textContent = '0';
+            ckFbAmountCell.className = 'text-right';
+            ckFbRow.appendChild(ckFbAmountCell);
+            
+            const ckFbEmptyCell1 = document.createElement('td');
+            ckFbEmptyCell1.textContent = '';
+            ckFbRow.appendChild(ckFbEmptyCell1);
+            
+            const ckFbEmptyCell2 = document.createElement('td');
+            ckFbEmptyCell2.textContent = '';
+            ckFbRow.appendChild(ckFbEmptyCell2);
+            
+            table.appendChild(ckFbRow);
+            
+            // TỔNG
+            const totalRow = document.createElement('tr');
+            totalRow.className = 'grand-total';
+            const totalCell = document.createElement('td');
+            totalCell.textContent = 'TỔNG';
+            totalCell.colSpan = 7;
+            totalRow.appendChild(totalCell);
+            
+            const totalAmountCell = document.createElement('td');
+            totalAmountCell.textContent = grandTotal.toLocaleString('vi-VN');
+            totalAmountCell.className = 'text-right';
+            totalRow.appendChild(totalAmountCell);
+            
+            const totalEmptyCell1 = document.createElement('td');
+            totalEmptyCell1.textContent = '';
+            totalRow.appendChild(totalEmptyCell1);
+            
+            const totalEmptyCell2 = document.createElement('td');
+            totalEmptyCell2.textContent = '';
+            totalRow.appendChild(totalEmptyCell2);
+            
+            table.appendChild(totalRow);
+            
+            // Remove the budget rows from main table - they should only be in the separate budget table
             
             // Budget table
             const budgetTable = document.getElementById('budgetTable');
             budgetTable.innerHTML = '';
             
+            // Recalculate the Facebook remaining amount directly here to ensure consistency
+            const fbBudgetValue = parseFloat(document.getElementById('fbBudget').value) || 0;
+            const fbRemainingValue = parseFloat(document.getElementById('fbRemaining').value) || 0;
+            const fbRemainingAfterValue = fbBudgetValue + fbRemainingValue - fbTotal;
+            
+            // Update the budget data with the recalculated value
+            budgetData[3][1] = formatNumber(fbRemainingAfterValue);
+            
+            // Log the final values for debugging
+            console.log("Final budget table values:");
+            console.log("Tổng nạp Facebook:", fbBudgetValue);
+            console.log("Còn tháng trước:", fbRemainingValue);
+            console.log("Sử dụng:", fbTotal);
+            console.log("Còn lại (recalculated):", fbRemainingAfterValue);
+            
+            // Create budget table with proper styling
             budgetData.forEach((row, rowIndex) => {
                 const tr = document.createElement('tr');
-                row.forEach((cell, colIndex) => {
-                    const td = document.createElement('td');
-                    td.textContent = cell;
-                    
-                    if (rowIndex === 0) td.className = 'budget-facebook';
-                    if (rowIndex === 5) td.className = 'budget-google';
-                    if (cell === '** Công nợ HĐ:') td.className = 'highlight-yellow';
-                    if (cell === 'Tiền Doanh số chốt hồ') {
-                        td.className = 'highlight-yellow text-center';
-                        td.setAttribute('rowspan', '4');
-                    }
-                    
-                    tr.appendChild(td);
-                });
+                
+                // First column (label)
+                const labelCell = document.createElement('td');
+                labelCell.textContent = row[0];
+                
+                if (rowIndex === 0) {
+                    labelCell.className = 'budget-facebook';
+                } else if (rowIndex === 5) {
+                    labelCell.className = 'budget-google';
+                } else if (row[0] === '** Công nợ Hải Dương:') {
+                    labelCell.className = 'highlight-yellow';
+                }
+                
+                tr.appendChild(labelCell);
+                
+                // Second column (value)
+                const valueCell = document.createElement('td');
+                valueCell.textContent = row[1];
+                if (rowIndex === 0) valueCell.className = 'budget-facebook';
+                if (rowIndex === 5) valueCell.className = 'budget-google';
+                tr.appendChild(valueCell);
+                
+                // Third column (empty)
+                const emptyCell = document.createElement('td');
+                emptyCell.textContent = '';
+                tr.appendChild(emptyCell);
+                
+                // Remove "Tiền Doanh số chốt hồ" cell
+                
                 budgetTable.appendChild(tr);
             });
             
@@ -506,13 +1391,190 @@
         function downloadExcel() {
             if (!workbook) return;
             
+            // Get the updated data from the editable table
+            updateWorkbookFromTable();
+            
             const fileName = `Báo_cáo_QC_${new Date().toISOString().slice(0, 10)}.xlsx`;
             XLSX.writeFile(workbook, fileName);
+            
+            alert('Báo cáo Excel đã được tải xuống thành công!');
+        }
+
+        function downloadPDF() {
+            try {
+                // Hiển thị thông báo đang xử lý
+                const processingAlert = document.createElement('div');
+                processingAlert.style.position = 'fixed';
+                processingAlert.style.top = '50%';
+                processingAlert.style.left = '50%';
+                processingAlert.style.transform = 'translate(-50%, -50%)';
+                processingAlert.style.background = 'rgba(0, 0, 0, 0.8)';
+                processingAlert.style.color = 'white';
+                processingAlert.style.padding = '20px 30px';
+                processingAlert.style.borderRadius = '10px';
+                processingAlert.style.zIndex = '9999';
+                processingAlert.style.display = 'flex';
+                processingAlert.style.alignItems = 'center';
+                processingAlert.style.gap = '15px';
+                processingAlert.innerHTML = '<div style="width: 20px; height: 20px; border: 3px solid #fff; border-top: 3px solid transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div><div>Đang tạo PDF...</div>';
+                processingAlert.style.fontFamily = 'Poppins, sans-serif';
+                document.body.appendChild(processingAlert);
+
+                // Tạo vùng báo cáo giống như giao diện, vừa 1 trang
+                const reportArea = document.createElement('div');
+                reportArea.style.background = 'white';
+                reportArea.style.padding = '20px';
+                reportArea.style.width = '1122px'; // A4 landscape at 96dpi
+                reportArea.style.maxWidth = '1122px';
+                reportArea.style.margin = '0 auto';
+                reportArea.style.fontFamily = "'Poppins', sans-serif";
+
+                // Tiêu đề
+                const title = document.createElement('h2');
+                title.textContent = 'BÁO CÁO QUẢNG CÁO';
+                title.style.textAlign = 'center';
+                title.style.marginBottom = '20px';
+                title.style.color = '#4361ee';
+                title.style.fontSize = '24px';
+                title.style.fontWeight = 'bold';
+                reportArea.appendChild(title);
+
+                // Clone bảng báo cáo và ngân sách
+                const reportTable = document.getElementById('reportTable').cloneNode(true);
+                const budgetTable = document.getElementById('budgetTable').cloneNode(true);
+
+                reportTable.style.width = '100%';
+                reportTable.style.marginBottom = '30px';
+                budgetTable.style.width = '50%';
+
+                reportArea.appendChild(reportTable);
+                reportArea.appendChild(budgetTable);
+
+                // Chân trang
+                const footer = document.createElement('div');
+                footer.style.marginTop = '20px';
+                footer.style.fontSize = '12px';
+                footer.style.color = '#666';
+                footer.style.textAlign = 'center';
+                footer.textContent = `Báo cáo được tạo ngày: ${new Date().toLocaleDateString('vi-VN')}`;
+                reportArea.appendChild(footer);
+
+                // Đảm bảo font Poppins đã load
+                document.fonts.ready.then(() => {
+                    document.body.appendChild(reportArea);
+
+                    // Sử dụng html2canvas với scale vừa phải để cân bằng nét và dung lượng
+                    html2canvas(reportArea, {
+                        scale: 2.5,
+                        useCORS: true,
+                        backgroundColor: 'white',
+                        logging: false,
+                        allowTaint: true,
+                        width: 1122 // A4 landscape at 96dpi
+                    }).then(canvas => {
+                        document.body.removeChild(reportArea);
+                        document.body.removeChild(processingAlert);
+
+                        // Tạo PDF landscape A4
+                        const { jsPDF } = window.jspdf;
+                        const pdf = new jsPDF({
+                            orientation: 'landscape',
+                            unit: 'pt',
+                            format: 'a4'
+                        });
+
+                        // Kích thước trang PDF
+                        const pageWidth = pdf.internal.pageSize.getWidth();
+                        const pageHeight = pdf.internal.pageSize.getHeight();
+
+                        // Tính toán tỷ lệ để vừa 1 trang
+                        let imgWidth = pageWidth;
+                        let imgHeight = canvas.height * (imgWidth / canvas.width);
+
+                        // Nếu ảnh cao hơn trang PDF, scale lại cho vừa 1 trang
+                        if (imgHeight > pageHeight) {
+                            imgHeight = pageHeight;
+                            imgWidth = canvas.width * (imgHeight / canvas.height);
+                        }
+
+                        // Thêm ảnh vào đúng giữa trang
+                        const x = (pageWidth - imgWidth) / 2;
+                        const y = (pageHeight - imgHeight) / 2;
+
+                        // Thêm ảnh JPEG nén chất lượng cao (giảm dung lượng)
+                        pdf.addImage(
+                            canvas.toDataURL('image/jpeg', 0.85),
+                            'JPEG',
+                            x,
+                            y,
+                            imgWidth,
+                            imgHeight
+                        );
+
+                        pdf.save(`Báo_cáo_QC_${new Date().toISOString().slice(0, 10)}.pdf`);
+                        alert('Báo cáo PDF đã được tải xuống thành công!\nFile đã tối ưu dung lượng, nét như JPG và vừa 1 trang.');
+                    }).catch(err => {
+                        if (document.body.contains(reportArea)) document.body.removeChild(reportArea);
+                        if (document.body.contains(processingAlert)) document.body.removeChild(processingAlert);
+                        alert('Lỗi khi tạo PDF: ' + err.message);
+                    });
+                });
+            } catch (error) {
+                alert('Lỗi khi tạo báo cáo PDF: ' + error.message);
+            }
+        }
+
+        function downloadJPG() {
+            // Chỉ lấy khu vực chứa báo cáo
+            const reportArea = document.createElement('div');
+            reportArea.style.background = 'white';
+            reportArea.style.padding = '20px';
+            reportArea.style.width = '100%';
+            
+            // Clone the tables to avoid modifying the original
+            const reportTable = document.getElementById('reportTable').cloneNode(true);
+            const budgetTable = document.getElementById('budgetTable').cloneNode(true);
+            
+            reportArea.appendChild(reportTable);
+            reportArea.appendChild(budgetTable);
+            
+            // Append to body temporarily for rendering
+            document.body.appendChild(reportArea);
+            
+            // Use html2canvas to capture the report area
+            html2canvas(reportArea, {
+                scale: 2,
+                useCORS: true,
+                backgroundColor: 'white'
+            }).then(canvas => {
+                // Remove the temporary element
+                document.body.removeChild(reportArea);
+                
+                // Convert canvas to data URL
+                const imgData = canvas.toDataURL('image/jpeg', 0.95);
+                
+                // Create a link element to download the image
+                const link = document.createElement('a');
+                link.href = imgData;
+                link.download = `Báo_cáo_QC_${new Date().toISOString().slice(0, 10)}.jpg`;
+                link.click();
+                
+                alert('Ảnh JPG đã được tải xuống thành công!');
+            }).catch(err => {
+                // Remove the temporary element in case of error
+                if (document.body.contains(reportArea)) {
+                    document.body.removeChild(reportArea);
+                }
+                
+                console.error('Error generating JPG:', err);
+                alert('Lỗi khi tạo ảnh JPG: ' + err.message);
+            });
         }
 
         function formatNumber(num) {
             return parseInt(num).toLocaleString('vi-VN');
         }
+        // Không còn tổng hợp realtime, chỉ giữ lại input
     </script>
 </body>
 </html>
